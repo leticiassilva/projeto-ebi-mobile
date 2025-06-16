@@ -1,0 +1,28 @@
+{
+    "cSpell.words": [
+        "AUTOINCREMENT",
+        "codigo",
+        "crianca",
+        "criancas",
+        "facebook",
+        "Firestore",
+        "getenv",
+        "Heof",
+        "historico",
+        "maindb",
+        "Numerico",
+        "numeros",
+        "observacoes",
+        "regiao",
+        "relatorio",
+        "Relatorio",
+        "responsavel",
+        "RNHTM",
+        "saida",
+        "Tipando",
+        "verificacao"
+    ],
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "CodeGPT.apiKey": "CodeGPT Plus Beta"
+}
