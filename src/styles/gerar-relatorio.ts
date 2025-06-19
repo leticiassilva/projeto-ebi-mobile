@@ -3,13 +3,15 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFDF8',
-    padding: 16,
+    backgroundColor: '#FDF3F6',
+    padding: 20,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 24,
+    alignSelf: "flex-start",
+    marginTop: 20,
   },
   backButton: {
     padding: 8,
@@ -18,7 +20,7 @@ export const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginLeft: 16,
-    color: '#333',
+    color: '#E91E63',
   },
   content: {
     gap: 24,
@@ -30,9 +32,9 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#FFEFD5',
-    borderRadius: 12,
-    elevation: 2,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -47,7 +49,7 @@ export const styles = StyleSheet.create({
   },
   dateValue: {
     fontSize: 16,
-    color: '#333',
+    color: '#1E88E5',
     fontWeight: '500',
     marginTop: 4,
   },
@@ -56,9 +58,9 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
-    backgroundColor: '#87CEF',
-    borderRadius: 12,
-    elevation: 2,
+    backgroundColor: '#1E88E5',
+    borderRadius: 8,
+    elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -79,7 +81,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    padding: 16,
+    padding: 20,
   },
   pickerContainer: {
     flexDirection: 'row',
@@ -104,10 +106,10 @@ export const styles = StyleSheet.create({
   },
   modalButtonText: {
     fontSize: 16,
-    color: '#FF69B4',
+    color: '#E91E63',
   },
   confirmButton: {
-    backgroundColor: '#FFB6C1',
+    backgroundColor: '#1E88E5',
   },
   confirmButtonText: {
     color: '#fff',

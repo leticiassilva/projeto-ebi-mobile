@@ -1,20 +1,28 @@
 import { useRouter } from "expo-router";
-import { MaterialIcons } from '@expo/vector-icons';
-import { Text, TextInput, TouchableOpacity, View, ScrollView, Alert } from "react-native";
-import { styles } from "@/styles/cadastro"
+import { MaterialIcons } from "@expo/vector-icons";
+import {
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  ScrollView,
+  Alert,
+} from "react-native";
+import { styles } from "@/styles/cadastro";
 import { useState, useEffect } from "react";
 import { getDB, cadastrarEducadora } from "@/services/sqliteService";
 
 export default function Cadastro() {
   const router = useRouter();
-  const [nome, setNome] = useState('');
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [igreja, setIgreja] = useState('');
-  const [regiao, setRegiao] = useState('');
-  const [bloco, setBloco] = useState('');
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [igreja, setIgreja] = useState("");
+  const [regiao, setRegiao] = useState("");
+  const [bloco, setBloco] = useState("");
   const [loading, setLoading] = useState(false);
   const [dbInitialized, setDbInitialized] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     initializeDatabase();
@@ -25,11 +33,11 @@ export default function Cadastro() {
       await getDB();
       setDbInitialized(true);
     } catch (error) {
-      console.error('Erro ao inicializar banco:', error);
+      console.error("Erro ao inicializar banco:", error);
       Alert.alert(
         "Erro",
         "Não foi possível inicializar o banco de dados. Por favor, reinicie o aplicativo.",
-        [{ text: "OK", onPress: () => router.replace("/") }]
+        [{ text: "OK", onPress: () => router.push("/") }]
       );
     }
   };
@@ -40,7 +48,14 @@ export default function Cadastro() {
       return;
     }
 
-    if (!nome.trim() || !email.trim() || !senha.trim() || !igreja.trim() || !regiao.trim() || !bloco.trim()) {
+    if (
+      !nome.trim() ||
+      !email.trim() ||
+      !senha.trim() ||
+      !igreja.trim() ||
+      !regiao.trim() ||
+      !bloco.trim()
+    ) {
       Alert.alert("Atenção", "Por favor, preencha todos os campos.");
       return;
     }
@@ -49,7 +64,7 @@ export default function Cadastro() {
       setLoading(true);
       const result = await cadastrarEducadora(
         nome,
-        'coordenadora',
+        "coordenadora",
         email,
         senha,
         igreja,
@@ -58,21 +73,19 @@ export default function Cadastro() {
       );
 
       if (result.success) {
-        Alert.alert(
-          "Sucesso",
-          "Cadastro realizado com sucesso!",
-          [{ text: "OK", onPress: () => router.replace("/") }]
-        );
+        Alert.alert("Sucesso", "Cadastro realizado com sucesso!", [
+          { text: "OK", onPress: () => router.push("/") },
+        ]);
       } else {
         Alert.alert(
           "Erro",
-          result.error === 'Email já cadastrado'
+          result.error === "Email já cadastrado"
             ? "Este email já está cadastrado. Por favor, use outro email ou faça login."
             : result.error || "Erro ao cadastrar. Por favor, tente novamente."
         );
       }
     } catch (error) {
-      console.error('Erro no cadastro:', error);
+      console.error("Erro no cadastro:", error);
       Alert.alert(
         "Erro",
         "Ocorreu um erro inesperado. Por favor, tente novamente."
@@ -120,12 +133,22 @@ export default function Cadastro() {
             placeholder="Sua senha"
             style={styles.input}
             placeholderTextColor="#757575"
-            secureTextEntry
+            secureTextEntry={!showPassword}
             value={senha}
             onChangeText={setSenha}
             autoCapitalize="none"
             editable={!loading}
           />
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
+            style={styles.passwordToggle}
+          >
+            <MaterialIcons
+              name={showPassword ? "visibility" : "visibility-off"} 
+              size={24}
+              color="#757575"
+            />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.inputContainer}>
@@ -167,7 +190,7 @@ export default function Cadastro() {
           />
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}
           onPress={handleCadastro}
           disabled={loading}
@@ -179,7 +202,7 @@ export default function Cadastro() {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Já possui uma conta?</Text>
-          <TouchableOpacity onPress={() => router.replace("/")} disabled={loading}>
+          <TouchableOpacity onPress={() => router.push("/")} disabled={loading}>
             <Text style={styles.footerButtonText}>Fazer login</Text>
           </TouchableOpacity>
         </View>

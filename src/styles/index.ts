@@ -7,6 +7,13 @@ export const styles = StyleSheet.create({
     padding: 20,
     justifyContent: 'center',
   },
+  ebiLogo: {
+    width: '100%',
+    height: 200,
+    resizeMode: 'contain',
+    marginBottom: 5,
+    alignSelf: 'center',
+  },
   header: {
     alignSelf: "flex-start",
     marginTop: 20,
@@ -45,6 +52,10 @@ export const styles = StyleSheet.create({
     marginLeft: 10,
     color: '#1E88E5',
     fontSize: 16,
+  },
+  passwordToggle: {
+    padding: 5,
+    marginLeft: 10,
   },
   buttonSignIn: {
     backgroundColor: '#1E88E5',

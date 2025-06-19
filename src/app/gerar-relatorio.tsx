@@ -1,13 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Alert, Modal, Platform, PermissionsAndroid, Linking } from 'react-native';
-import { router } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import { Picker } from '@react-native-picker/picker';
-import RNHTMLtoPDF from 'react-native-html-to-pdf';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import SQLite, { ResultSet } from 'react-native-sqlite-storage';
-import { styles } from '../styles/gerar-relatorio';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Alert,
+  Modal,
+  Platform,
+  PermissionsAndroid,
+  Linking,
+} from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import { MaterialIcons } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker";
+import RNHTMLtoPDF from "react-native-html-to-pdf";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import SQLite, { ResultSet } from "react-native-sqlite-storage";
+import { styles } from "../styles/gerar-relatorio";
+import { usePermissions } from "@/hooks/use-permissions";
+import { UserRole } from "@/types/permissions";
+import DocumentPicker from "react-native-document-picker";
+// import RNFS from "react-native-fs";
+import * as Sharing from "expo-sharing";
 
 interface EntradaRelatorio {
   nomeCrianca: string;
@@ -25,48 +39,63 @@ export default function GerarRelatorio() {
   const [endDate, setEndDate] = useState(new Date());
   const [tempDate, setTempDate] = useState(new Date());
 
+  const params = useLocalSearchParams<{
+    educadoraId?: string;
+    role: UserRole;
+  }>();
+
+  const role = params.role as UserRole;
+  const educadoraId = params.educadoraId;
+
+  const { hasPermission } = usePermissions(role);
+
   const requestStoragePermission = async () => {
-    if (Platform.OS === 'android') {
-      try {
-        // Solicita as permissões básicas de armazenamento
-        const granted = await PermissionsAndroid.requestMultiple([
-          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
-        ]);
-
-        const hasPermissions = 
-          granted['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED &&
-          granted['android.permission.WRITE_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED;
-
-        if (!hasPermissions) {
-          Alert.alert(
-            "Permissão Necessária",
-            "Para gerar o PDF, é necessário conceder permissão de armazenamento nas configurações do aplicativo.",
-            [
-              {
-                text: "Cancelar",
-                style: "cancel"
-              },
-              {
-                text: "Abrir Configurações",
-                onPress: () => Linking.openSettings()
-              }
-            ]
+    if (Platform.OS === "android") {
+      if (Platform.Version < 33) {
+        // Android 12 ou inferior
+        try {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+            {
+              title: "Permissão de Armazenamento",
+              message:
+                "O app precisa acessar o armazenamento para salvar arquivos PDF.",
+              buttonNeutral: "Pergunte-me depois",
+              buttonNegative: "Cancelar",
+              buttonPositive: "OK",
+            }
           );
+          return granted === PermissionsAndroid.RESULTS.GRANTED;
+        } catch (err) {
+          console.warn(err);
           return false;
         }
+      } else {
+        // Android 13+ não precisa pedir permissão para salvar PDF na pasta Downloads
         return true;
-      } catch (err) {
-        console.error("Erro ao solicitar permissão:", err);
-        Alert.alert(
-          "Erro",
-          "Não foi possível verificar as permissões de armazenamento. Por favor, verifique manualmente nas configurações do aplicativo."
-        );
-        return false;
       }
     }
     return true;
   };
+
+  // async function salvarPDFComSAF(pdfPath: string) {
+  //   try {
+  //     // Solicita ao usuário um local para salvar o arquivo
+  //     const res = await DocumentPicker.pickDirectory();
+  //     if (res && res.uri) {
+  //       // Copia o arquivo PDF gerado para o local escolhido
+  //       const destino = `${res.uri}/relatorio.pdf`;
+  //       await RNFS.copyFile(pdfPath, destino);
+  //       Alert.alert("Sucesso", "PDF salvo com sucesso!");
+  //     }
+  //   } catch (err) {
+  //     if (DocumentPicker.isCancel(err)) {
+  //       // Usuário cancelou
+  //     } else {
+  //       Alert.alert("Erro", "Não foi possível salvar o PDF.");
+  //     }
+  //   }
+  // }
 
   const generatePDF = async () => {
     try {
@@ -76,135 +105,150 @@ export default function GerarRelatorio() {
       }
 
       const db = await SQLite.openDatabase({
-        name: 'maindb.db',
-        location: 'default'
+        name: "maindb.db",
+        location: "default",
       });
 
-      const formattedStartDate = format(startDate, 'yyyy-MM-dd');
-      const formattedEndDate = format(endDate, 'yyyy-MM-dd');
+      const formattedStartDate = format(startDate, "yyyy-MM-dd");
+      const formattedEndDate = format(endDate, "yyyy-MM-dd");
 
-      const result = await new Promise<EntradaRelatorio[]>((resolve, reject) => {
-        db.transaction((tx: SQLite.Transaction) => {
-          tx.executeSql(
-            `SELECT c.nomeCrianca, e.dataEntrada as data_entrada, e.horaEntrada as hora_entrada, 
-                    c.responsavel as nomeResponsavel,
-                    c.telefoneResponsavel as telefoneResponsavel, ed.nome as nomeEducadora
-             FROM entradas e
-             JOIN children c ON e.childId = c.id
-             JOIN educadoras ed ON e.educadoraId = ed.id
-             WHERE e.dataEntrada BETWEEN ? AND ?
-             ORDER BY e.dataEntrada DESC, e.horaEntrada DESC`,
-            [formattedStartDate, formattedEndDate],
-            (_, resultSet: ResultSet) => {
-              const rows: EntradaRelatorio[] = [];
-              for (let i = 0; i < resultSet.rows.length; i++) {
-                rows.push(resultSet.rows.item(i));
+      const result = await new Promise<EntradaRelatorio[]>(
+        (resolve, reject) => {
+          db.transaction((tx: SQLite.Transaction) => {
+            tx.executeSql(
+              `SELECT c.nomeCrianca, e.dataEntrada as data_entrada, e.horaEntrada as hora_entrada, 
+                  c.responsavel as nomeResponsavel,
+                  c.telefoneResponsavel as telefoneResponsavel, ed.nome as nomeEducadora
+           FROM entradas e
+           JOIN children c ON e.childId = c.id
+           JOIN educadoras ed ON e.educadoraId = ed.id
+           WHERE e.dataEntrada BETWEEN ? AND ?
+           ORDER BY e.dataEntrada DESC, e.horaEntrada DESC`,
+              [formattedStartDate, formattedEndDate],
+              (_, resultSet: ResultSet) => {
+                const rows: EntradaRelatorio[] = [];
+                for (let i = 0; i < resultSet.rows.length; i++) {
+                  rows.push(resultSet.rows.item(i));
+                }
+                resolve(rows);
+              },
+              (_, error) => {
+                reject(error);
+                return false;
               }
-              resolve(rows);
-            },
-            (_, error) => {
-              reject(error);
-              return false;
-            }
-          );
-        });
-      });
+            );
+          });
+        }
+      );
 
       if (result.length === 0) {
-        Alert.alert('Aviso', 'Não há registros para o período selecionado.');
+        Alert.alert("Aviso", "Não há registros para o período selecionado.");
         return;
       }
 
       const htmlContent = `
-        <html>
-          <head>
-            <style>
-              body { font-family: Arial, sans-serif; }
-              h1 { text-align: center; color: #333; }
-              .period { text-align: center; color: #666; margin-bottom: 20px; }
-              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-              th, td { padding: 8px; text-align: left; border: 1px solid #ddd; }
-              th { background-color: #f2f2f2; }
-              tr:nth-child(even) { background-color: #f9f9f9; }
-            </style>
-          </head>
-          <body>
-            <h1>Relatório de Entradas - Salinha EBI</h1>
-            <div class="period">
-              Período: ${format(startDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })} até 
-              ${format(endDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-            </div>
-            <table>
+      <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; }
+            h1 { text-align: center; color: #333; }
+            .period { text-align: center; color: #666; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { padding: 8px; text-align: left; border: 1px solid #ddd; }
+            th { background-color: #f2f2f2; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+          </style>
+        </head>
+        <body>
+          <h1>Relatório de Entradas - Salinha EBI</h1>
+          <div class="period">
+            Período: ${format(startDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })} até 
+            ${format(endDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+          </div>
+          <table>
+            <tr>
+              <th>Criança</th>
+              <th>Data</th>
+              <th>Hora</th>
+              <th>Responsável</th>
+              <th>Telefone</th>
+              <th>Educadora</th>
+            </tr>
+            ${result
+              .map(
+                (item) => `
               <tr>
-                <th>Criança</th>
-                <th>Data</th>
-                <th>Hora</th>
-                <th>Responsável</th>
-                <th>Telefone</th>
-                <th>Educadora</th>
+                <td>${item.nomeCrianca}</td>
+                <td>${format(new Date(item.data_entrada), "dd/MM/yyyy")}</td>
+                <td>${item.hora_entrada}</td>
+                <td>${item.nomeResponsavel}</td>
+                <td>${item.telefoneResponsavel}</td>
+                <td>${item.nomeEducadora}</td>
               </tr>
-              ${result.map(item => `
-                <tr>
-                  <td>${item.nomeCrianca}</td>
-                  <td>${format(new Date(item.data_entrada), 'dd/MM/yyyy')}</td>
-                  <td>${item.hora_entrada}</td>
-                  <td>${item.nomeResponsavel}</td>
-                  <td>${item.telefoneResponsavel}</td>
-                  <td>${item.nomeEducadora}</td>
-                </tr>
-              `).join('')}
-            </table>
-          </body>
-        </html>
-      `;
+            `
+              )
+              .join("")}
+          </table>
+        </body>
+      </html>
+    `;
 
       const options = {
         html: htmlContent,
-        fileName: `relatorio_entradas_${format(new Date(), 'dd_MM_yyyy')}`,
-        directory: 'Download',
+        fileName: `relatorio_entradas_${format(new Date(), "dd_MM_yyyy")}`,
+        directory: "Download",
       };
 
       const file = await RNHTMLtoPDF.convert(options);
-      
-      if (file?.filePath) {
-        Alert.alert(
-          'Sucesso!', 
-          `Relatório gerado com sucesso!\n\nO arquivo foi salvo em:\n${file.filePath}\n\nVocê pode encontrá-lo na pasta Downloads do seu dispositivo.`,
-          [{ 
-            text: 'OK',
-            onPress: () => {
-              if (Platform.OS === 'android') {
-                Linking.openURL('content://com.android.externalstorage.documents/document/primary%3ADownload')
-                  .catch(() => {
-                    console.log('Não foi possível abrir a pasta Downloads');
-                  });
-              }
-            }
-          }]
-        );
-      } else {
-        throw new Error('Caminho do arquivo não gerado');
-      }
 
+      if (file?.filePath && file.filePath.startsWith("/")) {
+        const localUri = `file://${file.filePath}`;
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(localUri);
+        } else {
+          Alert.alert(
+            "Sucesso!",
+            `Relatório gerado com sucesso!\n\nO arquivo foi salvo em:\n${file.filePath}\n\nVocê pode encontrá-lo na pasta Downloads do seu dispositivo.`
+          );
+        }
+      } else {
+        throw new Error("Caminho do arquivo não gerado");
+      }
     } catch (error) {
       console.error(error);
       Alert.alert(
-        'Erro', 
-        'Ocorreu um erro ao gerar o relatório. Por favor, verifique se o aplicativo tem permissão para acessar o armazenamento nas configurações do seu dispositivo.'
+        "Erro",
+        "Ocorreu um erro ao gerar o relatório. Por favor, verifique se o aplicativo tem permissão para acessar o armazenamento nas configurações do seu dispositivo."
       );
     }
   };
 
-  const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
+  const years = Array.from(
+    { length: 10 },
+    (_, i) => new Date().getFullYear() - i
+  );
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
   const days = Array.from(
-    { length: new Date(tempDate.getFullYear(), tempDate.getMonth() + 1, 0).getDate() },
+    {
+      length: new Date(
+        tempDate.getFullYear(),
+        tempDate.getMonth() + 1,
+        0
+      ).getDate(),
+    },
     (_, i) => i + 1
   );
 
-  const DatePickerModal = ({ visible, onClose, onConfirm, initialDate }: any) => {
+  const DatePickerModal = ({
+    visible,
+    onClose,
+    onConfirm,
+    initialDate,
+  }: any) => {
     const [selectedYear, setSelectedYear] = useState(initialDate.getFullYear());
-    const [selectedMonth, setSelectedMonth] = useState(initialDate.getMonth() + 1);
+    const [selectedMonth, setSelectedMonth] = useState(
+      initialDate.getMonth() + 1
+    );
     const [selectedDay, setSelectedDay] = useState(initialDate.getDate());
 
     const handleConfirm = () => {
@@ -241,7 +285,9 @@ export default function GerarRelatorio() {
                 {months.map((month) => (
                   <Picker.Item
                     key={month}
-                    label={format(new Date(2000, month - 1, 1), 'MMMM', { locale: ptBR })}
+                    label={format(new Date(2000, month - 1, 1), "MMMM", {
+                      locale: ptBR,
+                    })}
                     value={month}
                   />
                 ))}
@@ -262,8 +308,15 @@ export default function GerarRelatorio() {
               <TouchableOpacity style={styles.modalButton} onPress={onClose}>
                 <Text style={styles.modalButtonText}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.modalButton, styles.confirmButton]} onPress={handleConfirm}>
-                <Text style={[styles.modalButtonText, styles.confirmButtonText]}>Confirmar</Text>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.confirmButton]}
+                onPress={handleConfirm}
+              >
+                <Text
+                  style={[styles.modalButtonText, styles.confirmButtonText]}
+                >
+                  Confirmar
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -275,8 +328,10 @@ export default function GerarRelatorio() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity 
-          onPress={() => router.back()}
+        <TouchableOpacity
+          onPress={() =>
+            router.push(`/home?educadoraId=${educadoraId}&role=${role}`)
+          }
           style={styles.backButton}
         >
           <MaterialIcons name="arrow-back" size={24} color="#007AFF" />
@@ -286,7 +341,7 @@ export default function GerarRelatorio() {
 
       <View style={styles.content}>
         <View style={styles.dateContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.dateButton}
             onPress={() => setShowStartDate(true)}
           >
@@ -294,12 +349,12 @@ export default function GerarRelatorio() {
             <View style={styles.dateTextContainer}>
               <Text style={styles.dateLabel}>Data Inicial</Text>
               <Text style={styles.dateValue}>
-                {format(startDate, 'dd/MM/yyyy')}
+                {format(startDate, "dd/MM/yyyy")}
               </Text>
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.dateButton}
             onPress={() => setShowEndDate(true)}
           >
@@ -307,16 +362,13 @@ export default function GerarRelatorio() {
             <View style={styles.dateTextContainer}>
               <Text style={styles.dateLabel}>Data Final</Text>
               <Text style={styles.dateValue}>
-                {format(endDate, 'dd/MM/yyyy')}
+                {format(endDate, "dd/MM/yyyy")}
               </Text>
             </View>
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity 
-          style={styles.generateButton}
-          onPress={generatePDF}
-        >
+        <TouchableOpacity style={styles.generateButton} onPress={generatePDF}>
           <MaterialIcons name="description" size={24} color="#fff" />
           <Text style={styles.generateButtonText}>Gerar Relatório</Text>
         </TouchableOpacity>

@@ -1,49 +1,51 @@
 import { StyleSheet } from 'react-native';
-import { theme } from '@/styles/theme';
 
 export const styles = StyleSheet.create({
   container: {
-    backgroundColor: theme.colors.background,
+    backgroundColor: '#FDF3F6',
     flex: 1,
     padding: 20,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: theme.colors.textPrimary,
+    color: '#E91E63',
     marginBottom: 30,
     textAlign: 'center',
   },
   form: {
-    backgroundColor: theme.colors.white,
+    backgroundColor: '#fff',
     padding: 20,
     borderRadius: 10,
-    shadowColor: theme.colors.textPrimary,
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    borderBottomColor: '#FFE082',
     marginBottom: 20,
     paddingBottom: 5,
   },
   input: {
     flex: 1,
     marginLeft: 10,
-    color: theme.colors.textPrimary,
+    color: '#1E88E5',
     fontSize: 16,
   },
+  passwordToggle: {
+    padding: 5,
+    marginLeft: 10,
+  },
   button: {
-    backgroundColor: theme.colors.pastelBlueDark,
-    padding: 15,
+    backgroundColor: '#1E88E5',
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 20,
@@ -52,7 +54,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#ccc',
   },
   buttonText: {
-    color: theme.colors.white,
+    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -67,23 +69,7 @@ export const styles = StyleSheet.create({
     marginRight: 5,
   },
   footerButtonText: {
-    color: theme.colors.pastelBlueDark,
+    color: '#1E88E5',
     fontWeight: 'bold',
   },
-  toggleButton: {
-    backgroundColor: theme.colors.pastelYellow,
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 20,
-    alignItems: 'center',
-  },
-  toggleButtonActive: {
-    backgroundColor: theme.colors.pastelYellowDark,
-  },
-  toggleButtonText: {
-    color: theme.colors.textPrimary,
-    fontSize: 14,
-    fontWeight: '500',
-  },
 });
-

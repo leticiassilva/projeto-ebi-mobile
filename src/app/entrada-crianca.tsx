@@ -19,8 +19,9 @@ import {
   registrarEntrada,
   EducadoraData,
   ChildData,
-  getSalinhaAtiva,
 } from "@/services/sqliteService";
+import { UserRole } from "@/types/permissions";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface Educadora {
   id: number;
@@ -37,8 +38,12 @@ function EntradaCrianca() {
   const params = useLocalSearchParams<{
     educadoraId?: string;
     salinhaId?: string; // Define o tipo do parâmetro esperado
-    // outros parâmetros...
+    role: UserRole;
   }>();
+
+  const role = params.role as UserRole;
+
+  const { hasPermission } = usePermissions(role);
 
   const [codigoColete, setCodigoColete] = useState("");
   const [dataEntrada, setDataEntrada] = useState("");
@@ -141,7 +146,10 @@ function EntradaCrianca() {
       // Passa o ID da educadora para a próxima tela
       router.replace({
         pathname: "/sala",
-        params: { educadoraId: educadoraId.toString() },
+        params: {
+          educadoraId: educadoraId.toString(),
+          role: role,
+        },
       });
     } catch (error) {
       console.error("Erro ao registrar entrada:", error);
@@ -155,7 +163,9 @@ function EntradaCrianca() {
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => router.replace("/sala")}
+          onPress={() =>
+            router.push(`/sala?educadoraId=${educadoraId}&role=${role}`)
+          }
           style={styles.backButton}
         >
           <MaterialIcons name="arrow-back" size={24} color="#007AFF" />

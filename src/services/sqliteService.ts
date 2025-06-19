@@ -1,3 +1,4 @@
+import { UserRole } from '@/types/permissions';
 import SQLite from 'react-native-sqlite-storage';
 
 // Configuração do SQLite
@@ -6,7 +7,7 @@ SQLite.enablePromise(true);
 export interface EducadoraData {
   id: number;
   nome: string;
-  tipo: 'educadora' | 'coordenadora';
+  funcao: UserRole;
   email: string;
   senha: string;
   igreja: string;
@@ -163,7 +164,7 @@ export const openDB = async (): Promise<SQLite.SQLiteDatabase> => {
 
     console.log('Database opened successfully');
 
-    //await dropTables();    
+    // await dropTables();    
 
     await createTables();
 
@@ -174,172 +175,6 @@ export const openDB = async (): Promise<SQLite.SQLiteDatabase> => {
     throw error;
   }
 };
-
-// Obter histórico das salinhas
-// export const getHistoricoSalinhas = async (data: string): Promise<SalinhaHistoricoCompleto[]> => {
-//   try {
-//     if (!database) {
-//       await openDB();
-//     }
-
-//     // Primeiro, buscar todas as salinhas
-//     const [salinhasResults] = await database.executeSql(`
-//       SELECT 
-//         s.id,
-//         s.educadoraId,
-//         s.dataAbertura,
-//         s.horaAbertura,
-//         s.horaFechamento,
-//         s.status,
-//         s.observacoes,
-//         ed.nome as nomeEducadora
-//       FROM salinhas s
-//       JOIN educadoras ed ON ed.id = s.educadoraId
-//       WHERE s.dataAbertura = ?
-//       ORDER BY s.horaAbertura DESC
-//     `, [data]);
-
-//     const salinhas: SalinhaHistoricoCompleto[] = [];
-
-//     // Para cada salinha, buscar suas crianças
-//     for (let i = 0; i < salinhasResults.rows.length; i++) {
-//       const salinha = salinhasResults.rows.item(i);
-
-//       console.log(`Buscando crianças para salinha ID ${salinha.id} - Educadora: ${salinha.nomeEducadora}`);
-
-//       // Buscar crianças desta salinha
-//       const [criancasResults] = await database.executeSql(`
-//         SELECT 
-//           c.id,
-//           c.nomeCrianca,
-//           e.codigoColete,
-//           e.horaEntrada,
-//           s.horaSaida
-//         FROM entradas e
-//         JOIN children c ON c.id = e.childId
-//         LEFT JOIN saidas s ON s.entradaId = e.id
-//         WHERE e.salinhaId = ?
-//         ORDER BY e.horaEntrada ASC
-//       `, [salinha.id]);
-
-//       const criancas: CriancaHistorico[] = [];
-
-//       // Processar resultados das crianças
-//       for (let j = 0; j < criancasResults.rows.length; j++) {
-//         const crianca = criancasResults.rows.item(j);
-//         criancas.push({
-//           id: crianca.id,
-//           nomeCrianca: crianca.nomeCrianca,
-//           codigoColete: crianca.codigoColete,
-//           horaEntrada: crianca.horaEntrada,
-//           horaSaida: crianca.horaSaida || null
-//         });
-//       }
-
-//       // Adicionar salinha com suas crianças ao array final
-//       salinhas.push({
-//         id: salinha.id,
-//         educadoraId: salinha.educadoraId,
-//         nomeEducadora: salinha.nomeEducadora,
-//         dataAbertura: salinha.dataAbertura,
-//         horaAbertura: salinha.horaAbertura,
-//         horaFechamento: salinha.horaFechamento,
-//         status: salinha.status,
-//         observacoes: salinha.observacoes,
-//         criancas: criancas
-//       });
-//     }
-
-//     return salinhas;
-
-//   } catch (error) {
-//     console.error('Erro ao buscar histórico das salinhas:', error);
-//     throw new Error(`Falha ao buscar histórico: ${error}`);
-//   }
-// };
-
-// Obter histórico de salinhas
-// export const getHistoricoSalinhas = async (data: string): Promise<SalinhaHistoricoCompleto[]> => {
-//   try {
-//     if (!database) {
-//       await openDB();
-//     }
-
-//     // Primeiro, buscar todas as salinhas
-//     const [salinhasResults] = await database.executeSql(`
-//       SELECT 
-//         s.id,
-//         s.educadoraId,
-//         s.dataAbertura,
-//         s.horaAbertura,
-//         s.horaFechamento,
-//         s.status,
-//         s.observacoes,
-//         ed.nome as nomeEducadora
-//       FROM salinhas s
-//       JOIN educadoras ed ON ed.id = s.educadoraId
-//       WHERE s.dataAbertura = ?
-//       ORDER BY s.horaAbertura DESC
-//     `, [data]);
-
-//     const salinhas: SalinhaHistoricoCompleto[] = [];
-
-//     //console.log(`Buscando histórico de salinhas qtde: ${salinhasResults.rows.length}`);
-
-//     // Para cada salinha, buscar suas crianças
-//     for (let i = 0; i < salinhasResults.rows.length; i++) {
-//       const salinha = salinhasResults.rows.item(i);
-
-//       // Buscar crianças desta salinha usando o ID da entrada
-//       const [criancasResults] = await database.executeSql(`
-//         SELECT 
-//           c.id,
-//           c.nomeCrianca,
-//           e.codigoColete,
-//           e.horaEntrada,
-//           COALESCE(s.horaSaida, null) as horaSaida
-//         FROM entradas e
-//         JOIN children c ON c.id = e.childId
-//         LEFT JOIN saidas s ON s.entradaId = e.id
-//         WHERE e.educadoraId = ? AND e.dataEntrada = ?
-//         ORDER BY e.horaEntrada ASC
-//       `, [salinha.educadoraId, data]);
-
-//       const criancas: CriancaHistorico[] = [];
-
-//       // Processar resultados das crianças
-//       for (let j = 0; j < criancasResults.rows.length; j++) {
-//         const crianca = criancasResults.rows.item(j);
-//         criancas.push({
-//           id: crianca.id,
-//           nomeCrianca: crianca.nomeCrianca,
-//           codigoColete: crianca.codigoColete,
-//           horaEntrada: crianca.horaEntrada,
-//           horaSaida: crianca.horaSaida
-//         });
-//       }
-
-//       // Adicionar salinha com suas crianças ao array final
-//       salinhas.push({
-//         id: salinha.id,
-//         educadoraId: salinha.educadoraId,
-//         nomeEducadora: salinha.nomeEducadora,
-//         dataAbertura: salinha.dataAbertura,
-//         horaAbertura: salinha.horaAbertura,
-//         horaFechamento: salinha.horaFechamento,
-//         status: salinha.status,
-//         observacoes: salinha.observacoes,
-//         criancas: criancas
-//       });
-//     }
-
-//     return salinhas;
-
-//   } catch (error) {
-//     console.error('Erro ao buscar histórico das salinhas:', error);
-//     throw new Error(`Falha ao buscar histórico: ${error}`);
-//   }
-// };
 
 export const getHistoricoSalinhas = async (data: string): Promise<SalinhaHistoricoCompleto[]> => {
   try {
@@ -476,13 +311,32 @@ const createTables = async (): Promise<void> => {
       CREATE TABLE IF NOT EXISTS educadoras (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nome TEXT NOT NULL,
-        tipo TEXT NOT NULL CHECK (tipo IN ('educadora', 'coordenadora')),
+        funcao TEXT NOT NULL CHECK (funcao IN ('admin', 'coordenadora', 'educadora')) DEFAULT 'educadora',
         email TEXT UNIQUE,
         senha TEXT,
         igreja TEXT,
         regiao TEXT,
         bloco TEXT,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Tabela de permissões
+    await database.executeSql(`
+      CREATE TABLE IF NOT EXISTS permissoes(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT NOT NULL,
+        descricao TEXT
+      )
+    `);
+
+    // Tabela de relacionamento funcao_permissoes
+    await database.executeSql(`
+      CREATE TABLE IF NOT EXISTS funcao_permissoes (
+        funcao TEXT NOT NULL,
+        permissao_id INTEGER NOT NULL,
+        FOREIGN KEY (permissao_id) REFERENCES permissoes (id),
+        PRIMARY KEY (funcao, permissao_id)
       )
     `);
 
@@ -648,7 +502,7 @@ export const dropTables = async (): Promise<boolean> => {
 // Cadastrar educadora
 export const cadastrarEducadora = async (
   nome: string,
-  tipo: 'educadora' | 'coordenadora',
+  funcao: UserRole,
   email?: string,
   senha?: string,
   igreja?: string,
@@ -674,9 +528,9 @@ export const cadastrarEducadora = async (
 
     // Inserir educadora
     const [result] = await database.executeSql(
-      `INSERT INTO educadoras (nome, tipo, email, senha, igreja, regiao, bloco, createdAt) 
+      `INSERT INTO educadoras (nome, funcao, email, senha, igreja, regiao, bloco, createdAt) 
        VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
-      [nome, tipo, email || null, senha || null, igreja || null, regiao || null, bloco || null]
+      [nome, funcao, email || null, senha || null, igreja || null, regiao || null, bloco || null]
     );
 
     return {
@@ -724,7 +578,7 @@ export const removerEducadora = async (id: number): Promise<OperationResult> => 
 
     // Verificar se é coordenadora (não pode ser removida)
     const [checkResult] = await database.executeSql(
-      'SELECT tipo FROM educadoras WHERE id = ?',
+      'SELECT funcao FROM educadoras WHERE id = ?',
       [id]
     );
 
@@ -733,7 +587,7 @@ export const removerEducadora = async (id: number): Promise<OperationResult> => 
     }
 
     const educadora = checkResult.rows.item(0);
-    if (educadora.tipo === 'coordenadora') {
+    if (educadora.funcao === 'coordenadora') {
       return { success: false, error: 'Coordenadoras não podem ser removidas' };
     }
 
@@ -758,12 +612,15 @@ export const loginEducadora = async (email: string, senha: string): Promise<Logi
     }
 
     const [results] = await database.executeSql(
-      'SELECT * FROM educadoras WHERE email = ? AND senha = ?',
-      [email, senha]
+      `SELECT id, funcao 
+       FROM educadoras 
+       WHERE email = ? AND senha = ?`,
+      [email.toLowerCase(), senha]
     );
 
     if (results.rows.length > 0) {
       const user = results.rows.item(0);
+      //console.log(`Usuário logado: ${user.id}, Função: ${user.funcao}`);
       return {
         success: true,
         user: user as EducadoraData
@@ -1246,54 +1103,6 @@ export const registrarSaidaCrianca = async (entradaId: number, horaSaida: string
 };
 
 // ==================== SALINHAS ====================
-
-// // Registrar abertura de salinha
-// export const registrarAberturaSalinha = async (params: AberturaSalinhaParams): Promise<OperationResult> => {
-//   try {
-//     if (!database) {
-//       await openDB();
-//     }
-
-//     const exiteSalinhaAtiva = await getSalinhaAtiva(
-//       params.educadoraId,
-//       params.data
-//     );
-//     console.log("exiteSalinhaAtiva: ", exiteSalinhaAtiva?.educadoraId);
-
-//     // Se já existe uma salinha ativa para a educadora, não permitir nova abertura
-//     if (exiteSalinhaAtiva) {
-//       return { success: true };
-//     }
-
-//     // Verificar se já existe uma salinha aberta hoje para esta educadora
-//     // const [check] = await database.executeSql(
-//     //   'SELECT id FROM salinhas WHERE educadoraId = ? AND dataAbertura = ? AND status = ?',
-//     //   [params.educadoraId, params.data, 'aberta']
-//     // );
-
-//     // if (check.rows.length > 0) {
-//     //   return { success: false, error: 'Já existe uma salinha aberta hoje para esta educadora' };
-//     // }
-
-//     // Inserir nova salinha
-//     const [result] = await database.executeSql(
-//       `INSERT INTO salinhas (educadoraId, dataAbertura, horaAbertura, observacoes, status, createdAt) 
-//        VALUES (?, ?, ?, ?, 'aberta', datetime('now'))`,
-//       [params.educadoraId, params.data, params.horaAbertura, params.observacoes || null]
-//     );
-
-//     return {
-//       success: true,
-//       id: result.insertId
-//     };
-//   } catch (error) {
-//     console.error('Error registering abertura salinha: ', error);
-//     return {
-//       success: false,
-//       error: 'Erro ao registrar abertura da salinha'
-//     };
-//   }
-// };
 
 // Registrar abertura de salinha
 export const registrarAberturaSalinha = async (params: AberturaSalinhaParams): Promise<OperationResult> => {
