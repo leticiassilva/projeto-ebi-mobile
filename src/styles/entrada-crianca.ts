@@ -2,28 +2,30 @@ import { StyleSheet, Dimensions } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
-    padding: 16,
+    backgroundColor: '#FDF3F6',
+    padding: 20,
     minHeight: Dimensions.get('window').height,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 24,
+    alignSelf: "flex-start",
+    marginTop: 20,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   backButtonText: {
-    color: '#007AFF',
+    color: '#1E88E5',
     fontSize: 16,
     marginLeft: 4,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#E91E63',
     marginTop: 20,
     marginBottom: 20,
     textAlign: 'center',
@@ -31,10 +33,10 @@ export const styles = StyleSheet.create({
     marginRight: 24
   },
   form: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    padding: 16,
-    elevation: 2,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -49,18 +51,18 @@ export const styles = StyleSheet.create({
   input: {
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#FFE082',
     borderRadius: 8,
     padding: 12,
-    fontSize: 16, 
-    color: '#333',
+    fontSize: 16,
+    color: '#1E88E5',
     marginBottom: 16,
     height: 48,
   },
   pickerContainer: {
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#FFE082',
     borderRadius: 8,
     marginBottom: 16,
     overflow: 'hidden',
@@ -71,7 +73,7 @@ export const styles = StyleSheet.create({
   },
   pickerItem: {
     fontSize: 16,
-    color: '#333',
+    color: '#1E88E5',
   },
   observacoesInput: {
     height: 100,
@@ -79,7 +81,7 @@ export const styles = StyleSheet.create({
     paddingTop: 12,
   },
   button: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#1E88E5',
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',
@@ -97,7 +99,7 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   errorText: {
-    color: '#dc3545',
+    color: '#E91E63',
     fontSize: 14,
     marginTop: -8,
     marginBottom: 16,

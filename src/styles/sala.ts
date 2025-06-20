@@ -1,30 +1,31 @@
 import { StyleSheet } from 'react-native';
-import { theme } from '@/styles/theme';
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    padding: 16,
+    backgroundColor: '#FDF3F6',
+    padding: 20,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 24,
+    alignSelf: "flex-start",
+    marginTop: 20,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   backButtonText: {
-    color: theme.colors.pastelBlueDark,
+    color: '#1E88E5',
     fontSize: 16,
     marginLeft: 4,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#E91E63',
     flex: 1,
     textAlign: 'center',
     marginRight: 24,
@@ -41,7 +42,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 8,
     flex: 1,
   },
   abrirSalinhaButtonText: {
@@ -51,12 +52,12 @@ export const styles = StyleSheet.create({
     marginLeft: 8,
   },
   novaEntradaButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#1E88E5',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 8,
     flex: 1,
   },
   novaEntradaButtonText: {
@@ -69,11 +70,11 @@ export const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   card: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
     marginBottom: 16,
-    elevation: 2,
+    elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -85,17 +86,17 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#FFE082',
     paddingBottom: 8,
   },
   nome: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#1E88E5',
   },
   colete: {
     fontSize: 16,
-    color: '#007AFF',
+    color: '#E91E63',
     fontWeight: '500',
   },
   cardBody: {
@@ -122,13 +123,13 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#FF3B30',
+    borderColor: '#E91E63',
     borderRadius: 8,
     padding: 12,
     marginTop: 12,
   },
   saidaButtonText: {
-    color: '#FF3B30',
+    color: '#E91E63',
     fontSize: 14,
     fontWeight: '500',
     marginLeft: 8,
@@ -136,6 +137,7 @@ export const styles = StyleSheet.create({
   loading: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   emptyText: {
     textAlign: 'center',
@@ -144,12 +146,12 @@ export const styles = StyleSheet.create({
     marginTop: 20,
   },
   fecharSalinhaButton: {
-    backgroundColor: '#FF3B30',
+    backgroundColor: '#E91E63',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 8,
     flex: 1,
   },
   fecharSalinhaButtonText: {
@@ -158,4 +160,4 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 8,
   },
-}); 
+});

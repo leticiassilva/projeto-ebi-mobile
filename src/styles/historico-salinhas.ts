@@ -3,13 +3,15 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
-    padding: 16,
+    backgroundColor: '#FDF3F6',
+    padding: 20,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
+    alignSelf: "flex-start",
+    marginTop: 20,
   },
   backButton: {
     flexDirection: 'row',
@@ -21,17 +23,20 @@ export const styles = StyleSheet.create({
     marginLeft: 4,
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
     marginLeft: 16,
     color: '#E91E63',
+    flex: 1,
+    textAlign: 'center',
+    marginRight: 24,
   },
   dateHeader: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#fff',
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 10,
     marginBottom: 16,
-    elevation: 2,
+    elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -41,22 +46,7 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     textAlign: 'center',
-    color: '#333',
-  },
-  addButton: {
-    backgroundColor: '#1E88E5',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  addButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '500',
-    marginLeft: 8,
+    color: '#1E88E5',
   },
   loading: {
     flex: 1,
@@ -74,10 +64,10 @@ export const styles = StyleSheet.create({
   },
   historicoItem: {
     backgroundColor: '#FFF',
-    borderRadius: 8,
+    borderRadius: 10,
     padding: 16,
     marginBottom: 12,
-    elevation: 2,
+    elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -92,7 +82,7 @@ export const styles = StyleSheet.create({
   educadoraName: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#333',
+    color: '#1E88E5',
   },
   status: {
     paddingHorizontal: 8,
@@ -123,33 +113,21 @@ export const styles = StyleSheet.create({
     fontStyle: 'italic',
     marginTop: 8,
   },
-  fecharButton: {
-    backgroundColor: '#E91E63',
-    padding: 8,
-    borderRadius: 4,
-    alignItems: 'center',
-    marginTop: 12,
-  },
-  fecharButtonText: {
-    color: '#FFF',
-    fontSize: 14,
-    fontWeight: '500',
-  },
   criancasContainer: {
     marginTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: '#FFE082',
     paddingTop: 12,
   },
   criancasTitle: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#333',
+    color: '#E91E63',
     marginBottom: 8,
   },
   criancaItem: {
     backgroundColor: '#FFF8E1',
-    borderRadius: 6,
+    borderRadius: 8,
     padding: 12,
     marginBottom: 8,
   },
@@ -186,4 +164,4 @@ export const styles = StyleSheet.create({
     color: '#E91E63',
     fontStyle: 'italic',
   },
-}); 
+});

@@ -6,16 +6,16 @@ import moment from "moment";
 
 import { styles } from "@/styles/sala";
 import {
-  registrarAberturaSalinha,
   registrarFechamentoSalinha,
   getSalinhaAtiva,
-  getDB,
   getEntradasAtivasSalinha,
   registrarSaidaCrianca,
   getHistoricoSalinhas,
   getEducadoras,
   abrirSalinha,
 } from "@/services/sqliteService";
+import { UserRole } from "@/types/permissions";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface SalinhaAtiva {
   id: number;
@@ -36,51 +36,33 @@ interface CriancaEntrada {
 export default function SalaScreen() {
   const [criancas, setCriancas] = useState<CriancaEntrada[]>([]);
   const [salinhaAtiva, setSalinhaAtiva] = useState<SalinhaAtiva | null>(null);
-  let [educadoraId, setEducadoraId] = useState<number | null>(null);
+  const [educadoraId, setEducadoraId] = useState<number | null>(null);
   const [educadoraNome, setEducadoraNome] = useState<string>("");
 
-  // Recebe o ID da educadora da tela anterior
   const params = useLocalSearchParams<{
-    educadoraId?: string; // Define o tipo do parâmetro esperado
-    // outros parâmetros...
+    educadoraId?: string;
+    role: UserRole;
   }>();
+  const role = params.role as UserRole;
+  const { hasPermission } = usePermissions(role);
 
-  // Acessa o valor do parâmetro
-  educadoraId = Number(params.educadoraId);
+  useEffect(() => {
+    if (params.educadoraId) {
+      setEducadoraId(Number(params.educadoraId));
+    }
+  }, [params.educadoraId]);
 
   useEffect(() => {
     const inicializarSala = async () => {
+      if (!educadoraId) return;
       try {
-        // Busca informações da educadora
         const educadoras = await getEducadoras();
-        console.log("educadoraId", educadoraId);
-
-        // Se recebeu ID da educadora por parâmetro
-        if (educadoraId) {
-          const educadoraSelecionada = educadoras.find(
-            (e) => e.id === educadoraId
-          );
-
-          if (educadoraSelecionada) {
-            const educadoraIdNumerico = educadoraSelecionada.id;
-            setEducadoraId(Number(educadoraIdNumerico));
-            setEducadoraNome(educadoraSelecionada.nome);
-
-            // Tenta abrir a salinha automaticamente
-            await handleAbrirSalinha(Number(educadoraIdNumerico));
-          }
+        const educadoraSelecionada = educadoras.find(
+          (e) => e.id === educadoraId
+        );
+        if (educadoraSelecionada) {
+          setEducadoraNome(educadoraSelecionada.nome);
         }
-        // else {
-        //   // Caso contrário, pega a primeira educadora
-        //   const primeiraEducadora = educadoras[0];
-        //   if (primeiraEducadora) {
-        //     const educadoraIdNumerico = primeiraEducadora.id;
-        //     setEducadoraId(Number(educadoraIdNumerico));
-        //     setEducadoraNome(primeiraEducadora.nome);
-        //   }
-        // }
-
-        // Carrega crianças da salinha
         await carregarCriancas();
       } catch (error) {
         console.error("Erro ao inicializar sala:", error);
@@ -91,101 +73,62 @@ export default function SalaScreen() {
     inicializarSala();
   }, [educadoraId]);
 
-  const carregarCriancas = async () => {
+  const carregarCriancas = async (manterSalinhaAtiva = false) => {
     try {
       const dataHoje = moment().format("YYYY-MM-DD");
-      console.log("Educadora ID: ", educadoraId);
+      if (!educadoraId) return;
 
-      const salinha = await getSalinhaAtiva(Number(educadoraId), dataHoje);
-      console.log(dataHoje);
-
-      if (salinha) {
+      const salinha = await getSalinhaAtiva(educadoraId, dataHoje);
+      if (!manterSalinhaAtiva && salinha) {
         setSalinhaAtiva(salinha);
-
-        const entradasAtivas = await getEntradasAtivasSalinha(dataHoje);
-
-        setCriancas(
-          entradasAtivas.map((entrada) => ({
-            id: entrada.id!,
-            nomeCrianca: entrada.nomeCrianca,
-            codigoColete: entrada.codigoColete,
-            responsavel: entrada.responsavel,
-            educadora: entrada.educadora,
-            horaEntrada: entrada.horaEntrada,
-          }))
-        );
       }
+
+      const entradasAtivas = await getEntradasAtivasSalinha(dataHoje);
+      setCriancas(
+        entradasAtivas.map((entrada) => ({
+          id: entrada.id!,
+          nomeCrianca: entrada.nomeCrianca,
+          codigoColete: entrada.codigoColete,
+          responsavel: entrada.responsavel,
+          educadora: entrada.educadora,
+          horaEntrada: entrada.horaEntrada,
+        }))
+      );
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
       Alert.alert("Erro", "Não foi possível carregar os dados da sala");
     }
   };
 
-  // const handleAbrirSalinha = async (educadoraId?: number) => {
-  //   try {
-
-  //     //const dataHoje = moment().format("YYYY-MM-DD");
-  //     //const horaAtual = moment().format("HH:mm");
-
-  //     // const idEducadora =
-  //     //   educadoraId ||
-  //     //   (await (await getDB())
-  //     //     .executeSql("SELECT id FROM educadoras LIMIT 1")
-  //     //     .then(([result]) => result.rows.item(0).id as number));
-
-  //     const result = await abrirSalinha(Number(educadoraId));
-
-  //     if (result.success) {
-  //       await carregarCriancas();
-  //       Alert.alert("Sucesso", `Salinha aberta por ${educadoraNome}`);
-  //     } else {
-  //       Alert.alert("Erro", result.error || "Erro ao abrir salinha");
-  //     }
-  //   } catch (error) {
-  //     console.error("Erro ao abrir salinha:", error);
-  //     Alert.alert("Erro", "Não foi possível abrir a salinha");
-  //   }
-  // };
-
-  const handleAbrirSalinha = async (educadoraId: number) => {
+  const handleAbrirSalinha = async (idEducadora: number) => {
     try {
-      // Validações iniciais
-      // console.log("Abrindo salinha para educadora ID:", educadoraId);
-      // if (!educadoraId) {
-      //   Alert.alert("Erro", "ID da educadora não informado");
-      //   return;
-      // }
-
-      const idEducadora = Number(educadoraId);
-
-      // Verifica se já existe uma salinha ativa
+      console.log("Tentando abrir salinha para educadora:", idEducadora);
       const dataHoje = moment().format("YYYY-MM-DD");
       const salinhaExistente = await getSalinhaAtiva(idEducadora, dataHoje);
 
-      console.log("Salinha existente:", salinhaExistente);
-
       if (salinhaExistente) {
         setSalinhaAtiva(salinhaExistente);
-        await carregarCriancas();
+        await carregarCriancas(true);
         Alert.alert("Aviso", "Já existe uma salinha aberta para hoje");
         return;
       }
 
-      // Tenta abrir a salinha
       const result = await abrirSalinha(idEducadora);
       console.log("Resultado da abertura da salinha:", result);
 
       if (result.success) {
-        // Recarrega os dados da salinha
-        const novaSalinha = await getSalinhaAtiva(idEducadora, dataHoje);
-        if (novaSalinha) {
-          setSalinhaAtiva(novaSalinha);
-          await carregarCriancas();
-          Alert.alert(
-            "Sucesso",
-            `Salinha aberta por ${educadoraNome || "Educadora"}`
-          );
-        }
+        const novaSalinha: SalinhaAtiva = {
+          id: result.id!,
+          educadoraId: idEducadora,
+          nomeEducadora: educadoraNome,
+          status: "aberta",
+        };
+        setSalinhaAtiva(novaSalinha);
+        await carregarCriancas(true);
+        Alert.alert(
+          "Sucesso",
+          `Salinha aberta por ${educadoraNome || "Educadora"}`
+        );
       } else {
         Alert.alert("Erro", result.error || "Não foi possível abrir a salinha");
       }
@@ -195,14 +138,68 @@ export default function SalaScreen() {
     }
   };
 
+  const handleFecharSalinha = async () => {
+    try {
+      if (!salinhaAtiva || !educadoraId) {
+        Alert.alert("Erro", "Não há salinha aberta para fechar");
+        return;
+      }
+
+      if (criancas.length > 0) {
+        Alert.alert(
+          "Erro",
+          "Todas as crianças devem ter saída registrada antes de fechar a salinha"
+        );
+        return;
+      }
+
+      const dataHoje = moment().format("YYYY-MM-DD");
+      const result = await registrarFechamentoSalinha(salinhaAtiva.id);
+
+      if (result.success) {
+        const historico = await getHistoricoSalinhas(dataHoje);
+        const salinhaFechada = historico.find((s) => s.id === salinhaAtiva.id);
+
+        if (salinhaFechada) {
+          const criancasUnicas = salinhaFechada.criancas.filter(
+            (crianca, index, self) =>
+              index === self.findIndex((c) => c.id === crianca.id)
+          );
+
+          const detalhes = `
+          Educadora: ${salinhaFechada.nomeEducadora}
+          Total de Crianças: ${criancasUnicas.length}
+
+          Crianças: ${criancasUnicas
+            .map((c) => `- ${c.nomeCrianca} (Colete: ${c.codigoColete})`)
+            .join("\n")}
+        `;
+
+          Alert.alert("Salinha Fechada", detalhes, [
+            {
+              text: "OK",
+              onPress: () => {
+                router.push(`/home?educadoraId=${educadoraId}&role=${role}`);
+              },
+            },
+          ]);
+        }
+      } else {
+        Alert.alert("Erro", result.error || "Erro ao fechar salinha");
+      }
+    } catch (error) {
+      console.error("Erro ao fechar salinha:", error);
+      Alert.alert("Erro", "Não foi possível fechar a salinha");
+    }
+  };
+
   const handleSaidaCrianca = async (crianca: CriancaEntrada) => {
     try {
       const horaAtual = moment().format("HH:mm");
-
       const result = await registrarSaidaCrianca(crianca.id, horaAtual);
 
       if (result.success) {
-        await carregarCriancas();
+        await carregarCriancas(true);
         Alert.alert("Sucesso", `Saída de ${crianca.nomeCrianca} registrada!`);
       } else {
         Alert.alert(
@@ -215,128 +212,6 @@ export default function SalaScreen() {
       Alert.alert("Erro", "Não foi possível registrar a saída");
     }
   };
-
-  // const handleFecharSalinha = async () => {
-  //   try {
-  //     if (!salinhaAtiva || !educadoraId) {
-  //       Alert.alert("Erro", "Não há salinha aberta para fechar");
-  //       return;
-  //     }
-
-  //     if (criancas.length > 0) {
-  //       Alert.alert(
-  //         "Erro",
-  //         "Todas as crianças devem ter saída registrada antes de fechar a salinha"
-  //       );
-  //       return;
-  //     }
-
-  //     const dataHoje = moment().format("YYYY-MM-DD");
-  //     const horaAtual = moment().format("HH:mm");
-
-  //     console.log("Data de hoje:", dataHoje);
-  //     console.log("Hora atual:", horaAtual);
-
-  //     console.log("Fechando salinha ativa ID: ", salinhaAtiva.id);
-
-  //     const result = await registrarFechamentoSalinha(salinhaAtiva.id);
-
-  //     console.log("Resultado do fechamento da salinha:", result.success);
-  //     if (result.success) {
-  //       // Buscar histórico para mostrar detalhes
-  //       const historico = await getHistoricoSalinhas(dataHoje);
-
-  //       console.log("Histórico de salinhas:", historico);
-
-  //       if (historico.length > 0) {
-  //         const ultimaSalinha = historico[0];
-
-  //         // Montar mensagem com detalhes
-  //         const detalhes = `
-  //           Educadora: ${ultimaSalinha.nomeEducadora}
-  //           Total de Crianças: ${ultimaSalinha.criancas.length}
-
-  //           Crianças: ${ultimaSalinha.criancas
-  //             .map((c) => `- ${c.nomeCrianca} (Colete: ${c.codigoColete})`)
-  //             .join("\n")}
-  //         `;
-
-  //         Alert.alert("Salinha Fechada", detalhes, [
-  //           {
-  //             text: "OK",
-  //             onPress: () => router.replace("/historico-salinhas"),
-  //           },
-  //         ]);
-  //       } else {
-  //         router.replace("/historico-salinhas");
-  //       }
-  //     } else {
-  //       Alert.alert("Erro", result.error || "Erro ao fechar salinha");
-  //     }
-  //   } catch (error) {
-  //     console.error("Erro ao fechar salinha:", error);
-  //     Alert.alert("Erro", "Não foi possível fechar a salinha");
-  //   }
-  // };
-
-  const handleFecharSalinha = async () => {
-  try {
-    if (!salinhaAtiva || !educadoraId) {
-      Alert.alert("Erro", "Não há salinha aberta para fechar");
-      return;
-    }
-
-    if (criancas.length > 0) {
-      Alert.alert(
-        "Erro",
-        "Todas as crianças devem ter saída registrada antes de fechar a salinha"
-      );
-      return;
-    }
-
-    const dataHoje = moment().format("YYYY-MM-DD");
-    const horaAtual = moment().format("HH:mm");
-
-    const result = await registrarFechamentoSalinha(salinhaAtiva.id);
-
-    if (result.success) {
-      // Buscar histórico apenas da salinha que foi fechada
-      const historico = await getHistoricoSalinhas(dataHoje);
-      const salinhaFechada = historico.find(s => s.id === salinhaAtiva.id);
-
-      if (salinhaFechada) {
-        // Filtra crianças únicas pelo ID
-        const criancasUnicas = salinhaFechada.criancas.filter((crianca, index, self) =>
-          index === self.findIndex((c) => c.id === crianca.id)
-        );
-
-        // Montar mensagem com detalhes
-        const detalhes = `
-          Educadora: ${salinhaFechada.nomeEducadora}
-          Total de Crianças: ${criancasUnicas.length}
-
-          Crianças: ${criancasUnicas
-            .map((c) => `- ${c.nomeCrianca} (Colete: ${c.codigoColete})`)
-            .join("\n")}
-        `;
-
-        Alert.alert("Salinha Fechada", detalhes, [
-          {
-            text: "OK",
-            onPress: () => router.replace("/home"),
-          },
-        ]);
-      } else {
-        Alert.alert("Erro", result.error || "Erro ao tentar recuperar o histórico");
-      }
-    } else {
-      Alert.alert("Erro", result.error || "Erro ao fechar salinha");
-    }
-  } catch (error) {
-    console.error("Erro ao fechar salinha:", error);
-    Alert.alert("Erro", "Não foi possível fechar a salinha");
-  }
-};
 
   const renderCrianca = ({ item }: { item: CriancaEntrada }) => (
     <View style={styles.card}>
@@ -372,7 +247,9 @@ export default function SalaScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => router.replace("/home")}
+          onPress={() =>
+            router.push(`/home?educadoraId=${educadoraId}&role=${role}`)
+          }
           style={styles.backButton}
         >
           <MaterialIcons name="arrow-back" size={24} color="#007AFF" />
@@ -385,7 +262,7 @@ export default function SalaScreen() {
         {!salinhaAtiva ? (
           <TouchableOpacity
             style={styles.abrirSalinhaButton}
-            onPress={() => handleAbrirSalinha(educadoraId)}
+            onPress={() => educadoraId && handleAbrirSalinha(educadoraId)}
           >
             <MaterialIcons name="meeting-room" size={24} color="#fff" />
             <Text style={styles.abrirSalinhaButtonText}>Abrir Salinha</Text>
@@ -402,7 +279,11 @@ export default function SalaScreen() {
 
         <TouchableOpacity
           style={styles.novaEntradaButton}
-          onPress={() => router.push(`/entrada-crianca?educadoraId=${educadoraId}&salinhaId=${salinhaAtiva?.id}`)}
+          onPress={() =>
+            router.push(
+              `/entrada-crianca?educadoraId=${educadoraId}&salinhaId=${salinhaAtiva?.id}&role=${role}`
+            )
+          }
           disabled={!salinhaAtiva}
         >
           <MaterialIcons name="add" size={24} color="#fff" />

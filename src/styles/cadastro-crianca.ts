@@ -2,14 +2,17 @@ import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FDF3F6',
     flex: 1,
-    padding: 16,
+    padding: 20,
+    justifyContent: 'center',
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
+    alignItems: 'stretch',
+    marginBottom: 5,
+    alignSelf: "flex-start",
+    marginTop: 1,
   },
   backButton: {
     flexDirection: 'row',
@@ -23,22 +26,26 @@ export const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#E91E63',
     marginTop: 20,
     marginBottom: 20,
     textAlign: 'center',
     flex: 1,
-    marginRight: 24, // Compensa o espaço do botão voltar
+    marginRight: 24,
   },
   form: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    padding: 16,
-    elevation: 2,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    marginBottom: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    elevation: 3,
   },
   label: {
     fontSize: 14,
@@ -49,15 +56,15 @@ export const styles = StyleSheet.create({
   input: {
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#FFE082',
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    color: '#333',
+    color: '#1E88E5',
     marginBottom: 16,
   },
   button: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#1E88E5',
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',

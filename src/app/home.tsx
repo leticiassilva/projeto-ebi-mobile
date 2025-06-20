@@ -3,16 +3,22 @@ import { router, useLocalSearchParams } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import { logout } from "@/services/sqliteService";
 import { styles } from "@/styles/home";
+import { PermissionGate } from "./components/permission-gate";
+import { PERMISSIONS, UserRole } from "@/types/permissions";
+import { usePermissions } from "@/hooks/use-permissions";
 
 function Home() {
   const params = useLocalSearchParams<{
-    educadoraId?: string; // Define o tipo do parâmetro esperado
-    // outros parâmetros...
+    educadoraId?: string;
+    role: UserRole;
   }>();
 
-  // Acessa o valor do parâmetro
+  const role = params.role as UserRole;
   const educadoraId = params.educadoraId;
   console.log("Home - educadoraId:", educadoraId);
+  console.log("Role atual:", role);
+
+  const { hasPermission } = usePermissions(role);
 
   const handleLogout = async () => {
     try {
@@ -33,7 +39,9 @@ function Home() {
       <View style={styles.grid}>
         <TouchableOpacity
           style={[styles.card, styles.cardPrimary]}
-          onPress={() => router.push(`/sala?educadoraId=${educadoraId}`)}
+          onPress={() =>
+            router.push(`/sala?educadoraId=${educadoraId}&role=${role}`)
+          }
         >
           <MaterialIcons
             name="people"
@@ -48,7 +56,11 @@ function Home() {
 
         <TouchableOpacity
           style={styles.card}
-          onPress={() => router.push("/cadastro-crianca")}
+          onPress={() =>
+            router.push(
+              `/cadastro-crianca?educadoraId=${educadoraId}&role=${role}`
+            )
+          }
         >
           <MaterialIcons
             name="person-add"
@@ -61,7 +73,11 @@ function Home() {
 
         <TouchableOpacity
           style={styles.card}
-          onPress={() => router.push("/visualizar-crianca")}
+          onPress={() =>
+            router.push(
+              `/visualizar-crianca?educadoraId=${educadoraId}&role=${role}`
+            )
+          }
         >
           <MaterialIcons
             name="list"
@@ -72,34 +88,51 @@ function Home() {
           <Text style={styles.cardText}>Crianças Cadastradas</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() => router.push("/cadastrar-educadora")}
-        >
-          <MaterialIcons
-            name="school"
-            size={32}
-            color="#007AFF"
-            style={styles.cardIcon}
-          />
-          <Text style={styles.cardText}>Cadastrar Educadora</Text>
-        </TouchableOpacity>
+        <PermissionGate role={role} permission={PERMISSIONS.MANAGE_EDUCATORS}>
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() =>
+              router.push(
+                `/cadastrar-educadora?educadoraId=${educadoraId}&role=${role}`
+              )
+            }
+          >
+            <MaterialIcons
+              name="school"
+              size={32}
+              color="#007AFF"
+              style={styles.cardIcon}
+            />
+            <Text style={styles.cardText}>Cadastrar Educadora</Text>
+          </TouchableOpacity>
+        </PermissionGate>
+
+        <PermissionGate role={role} permission={PERMISSIONS.VIEW_REPORTS}>
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() =>
+              router.push(
+                `/gerar-relatorio?educadoraId=${educadoraId}&role=${role}`
+              )
+            }
+          >
+            <MaterialIcons
+              name="description"
+              size={32}
+              color="#007AFF"
+              style={styles.cardIcon}
+            />
+            <Text style={styles.cardText}>Gerar Relatório</Text>
+          </TouchableOpacity>
+        </PermissionGate>
 
         <TouchableOpacity
-          style={styles.card}
-          onPress={() => router.push("/gerar-relatorio")}
-        >
-          <MaterialIcons
-            name="description"
-            size={32}
-            color="#007AFF"
-            style={styles.cardIcon}
-          />
-          <Text style={styles.cardText}>Gerar Relatório</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
           style={styles.historicoButton}
-          onPress={() => router.push("/historico-salinhas")}
+          onPress={() =>
+            router.push(
+              `/historico-salinhas?educadoraId=${educadoraId}&role=${role}`
+            )
+          }
         >
           <MaterialIcons name="history" size={24} color="#fff" />
           <Text style={styles.historicoButtonText}>Histórico</Text>

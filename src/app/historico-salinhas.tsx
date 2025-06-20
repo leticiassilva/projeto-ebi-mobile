@@ -9,16 +9,17 @@ import {
   RefreshControl,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   getHistoricoSalinhas,
   SalinhaHistoricoCompleto,
   CriancaHistorico,
-  getDB,
 } from "@/services/sqliteService";
 import { styles } from "@/styles/historico-salinhas";
+import { usePermissions } from "@/hooks/use-permissions";
+import { UserRole } from "@/types/permissions";
 
 export default function HistoricoSalinhas() {
   const [historico, setHistorico] = useState<SalinhaHistoricoCompleto[]>([]);
@@ -28,81 +29,53 @@ export default function HistoricoSalinhas() {
   const [dataFormatada, setDataFormatada] = useState("");
   const [educadoraId, setEducadoraId] = useState<number | undefined>(undefined);
 
-  // const carregarHistorico = async () => {
-    // try {
-    //   setLoading(true);
+  const params = useLocalSearchParams<{
+    educadoraId?: string;
+    role: UserRole;
+  }>();
 
-    //   // 1. Configurar a data
-    //   const hoje = new Date();
-    //   const dataHoje = format(hoje, "yyyy-MM-dd");
-    //   const dataFormatadaTexto = format(hoje, "dd 'de' MMMM 'de' yyyy", {
-    //     locale: ptBR,
-    //   });
+  const role = params.role as UserRole;
 
-    //   setDataAtual(dataHoje);
-    //   setDataFormatada(dataFormatadaTexto);
-
-    //   const db = await getDB();
-
-    //   // Obter o ID da educadora logada
-    //   const [educadoras] = await db.executeSql(
-    //     "SELECT id FROM educadoras LIMIT 1"
-    //   );
-    //   const currentEducadoraId =
-    //     educadoras.rows.length > 0 ? educadoras.rows.item(0).id : undefined;
-
-    //   setEducadoraId(currentEducadoraId);
-    //   console.log("EducadoraID: ", educadoraId);
-    //   console.log("EducadoraID: ", currentEducadoraId);
-
-    //   const data = await getHistoricoSalinhas(currentEducadoraId);
-    //   setHistorico(data);
-    // } catch (error) {
-    //   console.error("Erro ao carregar histórico:", error);
-    //   Alert.alert("Erro", "Não foi possível carregar o histórico de salinhas");
-    // } finally {
-    //   setLoading(false);
-    //   setRefreshing(false);
-    // }
-  // };
+  const { hasPermission } = usePermissions(role);
 
   const carregarHistorico = async () => {
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    // 1. Configurar a data
-    const hoje = new Date();
-    const dataHoje = format(hoje, 'yyyy-MM-dd');
-    const dataFormatadaTexto = format(hoje, "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+      // 1. Configurar a data
+      const hoje = new Date();
+      const dataHoje = format(hoje, "yyyy-MM-dd");
+      const dataFormatadaTexto = format(hoje, "dd 'de' MMMM 'de' yyyy", {
+        locale: ptBR,
+      });
 
-    setDataAtual(dataHoje);
-    setDataFormatada(dataFormatadaTexto);
+      setDataAtual(dataHoje);
+      setDataFormatada(dataFormatadaTexto);
 
-    // 2. Buscar histórico do dia
-    const historicoDia = await getHistoricoSalinhas(dataHoje);
+      // 2. Buscar histórico do dia
+      const historicoDia = await getHistoricoSalinhas(dataHoje);
 
-    console.log('Total de salinhas encontradas:', historicoDia.length);
+      console.log("Total de salinhas encontradas:", historicoDia.length);
 
-    // 3. Ordenar por horário de abertura
-    const historicoOrdenado = historicoDia.sort((a, b) => {
-      // Primeiro por status (abertas primeiro)
-      if (a.status === 'aberta' && b.status === 'fechada') return -1;
-      if (a.status === 'fechada' && b.status === 'aberta') return 1;
+      // 3. Ordenar por horário de abertura
+      const historicoOrdenado = historicoDia.sort((a, b) => {
+        // Primeiro por status (abertas primeiro)
+        if (a.status === "aberta" && b.status === "fechada") return -1;
+        if (a.status === "fechada" && b.status === "aberta") return 1;
 
-      // Depois por hora de abertura (mais recente primeiro)
-      return b.horaAbertura.localeCompare(a.horaAbertura);
-    });
+        // Depois por hora de abertura (mais recente primeiro)
+        return b.horaAbertura.localeCompare(a.horaAbertura);
+      });
 
-    setHistorico(historicoOrdenado);
-
-  } catch (error) {
-    console.error('Erro ao carregar histórico:', error);
-    Alert.alert('Erro', 'Não foi possível carregar o histórico de salinhas');
-  } finally {
-    setLoading(false);
-    setRefreshing(false);
-  }
-};
+      setHistorico(historicoOrdenado);
+    } catch (error) {
+      console.error("Erro ao carregar histórico:", error);
+      Alert.alert("Erro", "Não foi possível carregar o histórico de salinhas");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     carregarHistorico();
@@ -142,7 +115,9 @@ export default function HistoricoSalinhas() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() =>
+            router.push(`/home?educadoraId=${educadoraId}&role=${role}`)
+          }
           style={styles.backButton}
         >
           <MaterialIcons name="arrow-back" size={24} color="#1E88E5" />

@@ -1,30 +1,32 @@
 import { StyleSheet } from 'react-native';
-import { theme } from '@/styles/theme';
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    padding: 16,
+    backgroundColor: '#FDF3F6',
+    padding: 20,
+    justifyContent: 'center', 
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 24,
+    alignSelf: "flex-start",
+    marginTop: 20,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   backButtonText: {
-    color: theme.colors.pastelBlueDark, // azul
+    color: '#1E88E5',
     fontSize: 16,
     marginLeft: 4,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: theme.colors.pastelPink,
+    color: '#E91E63',
     flex: 1,
     textAlign: 'center',
     marginRight: 24,
@@ -33,15 +35,15 @@ export const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   card: {
-    backgroundColor: '#FDF3F6', // rosa bem claro
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
     marginBottom: 16,
-    elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    elevation: 3,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -49,17 +51,17 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.pastelYellow, // amarelo claro
+    borderBottomColor: '#FFE082',
     paddingBottom: 8,
   },
   nome: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: theme.colors.pastelBlueDark, // azul
+    color: '#1E88E5',
   },
   idade: {
     fontSize: 16,
-    color: theme.colors.pastelPink, // rosa
+    color: '#E91E63',
   },
   cardBody: {
     gap: 8,
@@ -72,7 +74,7 @@ export const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#555', // cinza escuro neutro
+    color: '#666',
     fontWeight: '500',
   },
   value: {
@@ -82,23 +84,23 @@ export const styles = StyleSheet.create({
   entradaInfo: {
     marginTop: 8,
     padding: 8,
-    backgroundColor: '#FFF8E1', // amarelo bem claro
+    backgroundColor: '#FFF8E1',
     borderRadius: 8,
   },
   entradaLabel: {
     fontSize: 14,
-    color: theme.colors.pastelYellowDark, // amarelo
+    color: '#FFC107',
     fontWeight: '500',
     marginBottom: 4,
   },
   entradaHora: {
     fontSize: 16,
-    color: theme.colors.pastelBlueDark, // azul
+    color: '#1E88E5',
     fontWeight: 'bold',
   },
   saidaHora: {
     fontSize: 14,
-    color: theme.colors.pastelPink, // rosa
+    color: '#E91E63',
     marginTop: 4,
   },
   cardFooter: {
@@ -107,7 +109,7 @@ export const styles = StyleSheet.create({
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.pastelYellow, // amarelo claro
+    borderTopColor: '#FFE082',
   },
   historicoButton: {
     flexDirection: 'row',
@@ -115,7 +117,7 @@ export const styles = StyleSheet.create({
     padding: 8,
   },
   historicoButtonText: {
-    color: theme.colors.pastelBlueDark, // azul
+    color: '#1E88E5',
     marginLeft: 4,
     fontSize: 14,
   },
@@ -125,13 +127,14 @@ export const styles = StyleSheet.create({
     padding: 8,
   },
   removerButtonText: {
-    color: theme.colors.pastelPink, // rosa
+    color: '#E91E63',
     marginLeft: 4,
     fontSize: 14,
   },
   loading: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   emptyText: {
     textAlign: 'center',

@@ -3,12 +3,13 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    padding: 16,
-    textAlign: 'center',
+    backgroundColor: '#FDF3F6',
+    padding: 20,
   },
   header: {
     marginBottom: 24,
+    alignSelf: "center",
+    marginTop: 20,
   },
   title: {
     fontSize: 28,
@@ -31,11 +32,11 @@ export const styles = StyleSheet.create({
   },
   card: {
     width: '47%',
-    backgroundColor: '#FDF3F6',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
     alignItems: 'center',
-    elevation: 2,
+    elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -45,10 +46,7 @@ export const styles = StyleSheet.create({
   cardPrimary: {
     backgroundColor: '#1E88E5',
     width: '97%',
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 12,
+    borderRadius: 10,
   },
   cardDanger: {
     backgroundColor: '#E91E63',
@@ -59,7 +57,7 @@ export const styles = StyleSheet.create({
   cardText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#333',
+    color: '#666',
     textAlign: 'center',
   },
   cardTextWhite: {
@@ -70,9 +68,9 @@ export const styles = StyleSheet.create({
     paddingTop: 24,
   },
   logoutButton: {
-    backgroundColor: '#FF3B30',
+    backgroundColor: '#E91E63',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -83,13 +81,13 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 8,
   },
-    historicoButton: {
-    backgroundColor: '#6A5ACD',
+  historicoButton: {
+    backgroundColor: '#1E88E5',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 8,
     flex: 1,
   },
   historicoButtonText: {

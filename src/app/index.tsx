@@ -1,14 +1,19 @@
 import { useRouter } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Text, TextInput,
+import {
+  Text,
+  TextInput,
   TouchableOpacity,
   View,
   Alert,
   SafeAreaView,
+  Image,
 } from "react-native";
 import { styles } from "../styles";
 import { useState, useEffect } from "react";
 import { getDB, loginEducadora } from "../services/sqliteService";
+
+const ebiLogo = require("../../assets/ebi_wallpaper.jpg");
 
 export default function Login() {
   const router = useRouter();
@@ -16,6 +21,7 @@ export default function Login() {
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
   const [dbIniialized, setDbInitialized] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     initializeDatabase();
@@ -48,8 +54,11 @@ export default function Login() {
       if (loginResult.success) {
         const educadoraId = loginResult.user?.id;
         console.log("Login bem-sucedido:", loginResult.user);
+        console.log("Login bem-sucedido:", loginResult.user?.funcao);
         console.log("Index - educadoraId:", educadoraId);
-        router.replace(`/home?educadoraId=${educadoraId}`);
+        router.replace(
+          `/home?educadoraId=${educadoraId}&role=${loginResult.user?.funcao}`
+        );
       } else {
         Alert.alert("Erro", "E-mail ou senha inválidos.");
       }
@@ -66,6 +75,8 @@ export default function Login() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Image source={ebiLogo} style={styles.ebiLogo} resizeMode="contain" />
+
       <Text style={styles.welcome}>Faça login na sua conta</Text>
 
       <View style={styles.content}>
@@ -89,12 +100,22 @@ export default function Login() {
             placeholder="Sua senha"
             style={styles.input}
             placeholderTextColor="#757575"
-            secureTextEntry
+            secureTextEntry={!showPassword}
             value={senha}
             onChangeText={setSenha}
             autoCapitalize="none"
             editable={!loading}
           />
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
+            style={styles.passwordToggle}
+          >
+            <MaterialIcons
+              name={showPassword ? "visibility" : "visibility-off"}
+              size={24}
+              color="#757575"
+            />
+          </TouchableOpacity>
         </View>
       </View>
 
