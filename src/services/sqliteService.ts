@@ -164,7 +164,7 @@ export const openDB = async (): Promise<SQLite.SQLiteDatabase> => {
 
     console.log('Database opened successfully');
 
-    // await dropTables();    
+    // await dropTables();
 
     await createTables();
 
